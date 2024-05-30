@@ -19,5 +19,5 @@ else
     yLabel="Mean[V]"
 fi
 
-gnuplot -e "gainTotal=$gain" -e "yLabelText='$yLabel'" plot.gpl
+gnuplot -e "gainTotal=$gain" -e "yLabelText='$yLabel'" -e "frequency=$frequency" plot.gpl
 
