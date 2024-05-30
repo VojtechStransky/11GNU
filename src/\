@@ -1,0 +1,8 @@
+set terminal png enhanced notransparent nointerlace truecolor font "Liberation, 20" size 2000,1400
+set out "test_graph.png"
+set title "Nadpis Grafu"
+set xlabel "Time[ms]"
+set ylabel "toReplaceTag0"
+#plot "< /bin/bash -c 'for ((i=1;i<100;i++)); do echo $RANDOM; done'" using (10*$0):($1/100) with lines title "100 náhodných vzorků"
+plot "plotData.dat" using ($0*0.02):(f($1) w linesp
+set out
