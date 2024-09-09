@@ -4,27 +4,30 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
+
+#define ARG_FLAGS_VARIANCE 1
+#define NO_ARG_FLAGS_VARIANCE 0
 
 static struct option _LongOptionList[] = {
     { "return-sigma", 0, NULL, 's' },
-    { "number-n",  1, NULL, 'n' },
-    { NULL,       0, NULL, 0   },
+    { "number-n", 1, NULL, 'n' },
+    { "file", 1, NULL, 'f' },
+    { NULL, 0, NULL, 0 },
 };
 
-typedef struct Parameters {
-    bool flagPresent;
-    int n;
-} parameters;
+unsigned int ArgEnableVariance = NO_ARG_FLAGS_VARIANCE;
+uint32_t ArgN = 0;
+char *FileName;
 
-struct Parameters process_arguments (int argc, char **argv)
+void process_arguments (int argc, char **argv)
 {
-    parameters p;
-    p.flagPresent = false;
-
     int _Ret;
 
     while (1) {
-        _Ret = getopt_long (argc, argv, "-fv:", _LongOptionList, NULL);
+        _Ret = getopt_long (argc, argv, "snf:", _LongOptionList, NULL);
 
         if (_Ret < 0) {
             break;
@@ -32,49 +35,47 @@ struct Parameters process_arguments (int argc, char **argv)
 
         switch (_Ret) {
             case 's':
-                p.flagPresent = true;
+                ArgEnableVariance = ARG_FLAGS_VARIANCE;
                 break;
 
             case 'n':
-                p.n = atoi(optarg);
+                ArgN = atoi(optarg);
+
+                if (ArgN <= 0) {
+                    fprintf(stderr, "N is not positive!\n");
+                }
+
+                break;
+
+            case 'f':
+                FileName = strdup(optarg);
+
+                if (FileName == "") {
+                    fprintf(stderr, "File name is not valid!\n");
+                }
 
                 break;
 
             case '?':
                 break;
-
-            case 1:
-                break;
         }
     }
-
-    return p;
 }
 
 bool IsBitSet(uint8_t num, int bit)
 {
-    return 1 == ( (num >> bit) & 1);
-}
-
-unsigned char Reverse(unsigned char b) //mirrors bytes
-{
-   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-   return b;
+    return 1 == ((num >> bit) & 1);
 }
 
 int32_t BufferToInt(unsigned char buffer[4])
 {
-    int32_t concatInt = (Reverse(buffer[3]) << 24) | (Reverse(buffer[2]) << 16) | (Reverse(buffer[1]) << 8) | Reverse(buffer[0]);
+    int32_t concatInt;
 
     if (IsBitSet(buffer[2], 0)) //handles signum of integers
     {
-        concatInt = concatInt & 0x0000FFFF;
-    }
-    else
-    {
-        concatInt = concatInt | 0xFFFF0000;
+        concatInt = ((int32_t)0xFF << 24) | ((int32_t)0xFF << 16) | ((int32_t)buffer[1] << 8) | (buffer[0]);
+    } else {
+        concatInt = ((int32_t)0x00 << 24) | ((int32_t)0x00 << 16) | ((int32_t)buffer[1] << 8) | (buffer[0]);
     }
 
     return concatInt;
@@ -82,53 +83,59 @@ int32_t BufferToInt(unsigned char buffer[4])
 
 int main (int argc, char **argv)
 {
+    process_arguments(argc, argv);
+
     FILE *fp;
+    FILE *fp2;
     FILE *fw;
     unsigned char buffer[4];
-    int n;
     bool next = true;
 
-    parameters p;
-
-    fp = fopen("11GNU-data1.dat", "rb");
+    fp = fopen(FileName, "rb");
+    fp2 = fopen(FileName, "rb");
     fw = fopen("plotData.dat", "w");
-    p = process_arguments(argc, argv);
-    n = p.n;
 
     while (next)
     {
+        int32_t mean = 0;
         int32_t sum = 0;
-        int toReturn = 0;
+        int32_t toReturn = 0;
+        int32_t concatInt;
 
-        int values[n];
-
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < ArgN; i++)
         {
+
             if (fread(buffer, 4, 1, fp) != 1)
             {
                 next = false;
                 break;
             }
 
-            int32_t concatInt = BufferToInt(buffer);
-
-            if (p.flagPresent)
-            {
-                values[i] = concatInt;
-            }
+            concatInt = BufferToInt(buffer);
 
             sum += concatInt;
         }
 
-        int mean = sum / n;
+        mean = (sum > 0) ? sum/ArgN : -((-sum)/ArgN);
 
-        if (p.flagPresent)
+        if (ArgEnableVariance == ARG_FLAGS_VARIANCE)
         {
-            long long sum2 = 0;
+            //printf("Hello, World\n");
+            int32_t sum2 = 0;
 
-            for (int i = 0; i < n; i++)
+            //fseek(fp, -(ArgN*4), SEEK_CUR);
+
+            for (int i = 0; i < ArgN; i++)
             {
-                sum2 += ((values[i] - mean)*(values[i] - mean))/n;
+                if (fread(buffer, 4, 1, fp2) != 1)
+                {
+                    next = false;
+                    break;
+                }
+
+                concatInt = BufferToInt(buffer);
+
+                sum2 += ((concatInt - mean)*(concatInt - mean))/ArgN;
             }
 
             toReturn = sum2;
