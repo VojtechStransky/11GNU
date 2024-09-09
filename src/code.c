@@ -120,10 +120,7 @@ int main (int argc, char **argv)
 
         if (ArgEnableVariance == ARG_FLAGS_VARIANCE)
         {
-            //printf("Hello, World\n");
             int32_t sum2 = 0;
-
-            //fseek(fp, -(ArgN*4), SEEK_CUR);
 
             for (int i = 0; i < ArgN; i++)
             {
