@@ -1,12 +1,19 @@
-AC_INIT
+#AC_PREREQ([2.72])
+AC_INIT([gnucode], [0.1.0])
 AC_CONFIG_SRCDIR([src/code.c])
+AM_INIT_AUTOMAKE
 
-PACKAGE=gnucode
-VERSION=0.1.0
+AC_PROG_CC
 
-AC_SUBST([CC])
+#AC_CHECK_HEADERS([fcntl.h stdint.h unistd.h])
 
-AC_PROG_CC([icc gcc])
+#AC_CHECK_HEADER_STDBOOL
+#AC_TYPE_INT32_T
+#AC_TYPE_UINT32_T
+#AC_TYPE_UINT8_T
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CHECK_FUNCS([strdup])
+
+AC_CONFIG_FILES([Makefile
+                 src/Makefile])
 AC_OUTPUT
