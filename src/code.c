@@ -19,7 +19,7 @@ static struct option _LongOptionList[] = {
 };
 
 unsigned int ArgEnableVariance = NO_ARG_FLAGS_VARIANCE;
-uint32_t ArgN = 0;
+uint64_t ArgN = 0;
 char *FileName;
 
 void process_arguments (int argc, char **argv)
@@ -83,28 +83,29 @@ int32_t BufferToInt(unsigned char buffer[4])
 
 int main (int argc, char **argv)
 {
-    process_arguments(argc, argv);
-
     FILE *fp;
     FILE *fp2;
     FILE *fw;
     unsigned char buffer[4];
     bool next = true;
 
+    int32_t mean = 0;
+    int32_t sum = 0;
+    int32_t toReturn = 0;
+    int32_t concatInt;
+    double sumSigma = 0;
+
     fp = fopen(FileName, "rb");
     fp2 = fopen(FileName, "rb");
     fw = fopen("plotData.dat", "w");
 
+    process_arguments(argc, argv);
+
     while (next)
     {
-        int32_t mean = 0;
-        int32_t sum = 0;
-        int32_t toReturn = 0;
-        int32_t concatInt;
 
         for (int i = 0; i < ArgN; i++)
         {
-
             if (fread(buffer, 4, 1, fp) != 1)
             {
                 next = false;
@@ -120,7 +121,6 @@ int main (int argc, char **argv)
 
         if (ArgEnableVariance == ARG_FLAGS_VARIANCE)
         {
-            int32_t sum2 = 0;
 
             for (int i = 0; i < ArgN; i++)
             {
@@ -132,10 +132,10 @@ int main (int argc, char **argv)
 
                 concatInt = BufferToInt(buffer);
 
-                sum2 += ((concatInt - mean)*(concatInt - mean))/ArgN;
+                sumSigma += ((concatInt - mean)*(concatInt - mean))/ArgN;
             }
 
-            toReturn = sum2;
+            toReturn = sumSigma;
         }
         else
         {

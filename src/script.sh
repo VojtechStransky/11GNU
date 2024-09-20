@@ -10,9 +10,9 @@ while getopts ":f:d:n:s:" opt; do
   esac
 done
 
-preGain=$(sed -nr '/^#\s*Pre-Amplifier\sGain/{s/.*Pre-Amplifier\sGain\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
-gain=$(sed -nr '/^#\s*Amplifier\sGain/{s/.*Amplifier\sGain\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
-frequency=$(sed -nr '/^#\s*Sampling\sFreq.:/{s/.*Sampling\sFreq.\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
+preGain=$(sed -nr '/^#\s*Pre-Amplifier\sGain/{s/^#\s*Pre-Amplifier\sGain\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
+gain=$(sed -nr '/^#\s*Amplifier\sGain/{s/^#\s*Amplifier\sGain\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
+frequency=$(sed -nr '/^#\s*Sampling\sFreq.:/{s/^#\s*Sampling\sFreq.\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
 
 if [ "$sigma" = true ] ; then
     gnucode --number-n=$number --return-sigma --file=$fileDat
