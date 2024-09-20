@@ -1,14 +1,17 @@
 #!/bin/bash
 
-while getopts ":f:d:n:s:" opt; do
+while getopts ":d:n:s:" opt; do
   case ${opt} in
-    f ) fileDat=$OPTARG;;
     d ) file=$OPTARG;;
     n ) number=$OPTARG;;
     s ) sigma=$OPTARG;;
     \? ) echo "Usage: cmd [-f] [-n] [-s]";;
   esac
 done
+
+fileDat=${file/.txt/.dat}
+
+echo $fileDat
 
 preGain=$(sed -nr '/^#\s*Pre-Amplifier\sGain/{s/^#\s*Pre-Amplifier\sGain\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
 gain=$(sed -nr '/^#\s*Amplifier\sGain/{s/^#\s*Amplifier\sGain\s*:\s*(([0-9]+.?[0-9]+)).*/\1/;p;}' $file)
