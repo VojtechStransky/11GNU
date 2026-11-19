@@ -44,7 +44,3 @@ script.sh -d FILE.txt -n N [-s true]
   `Pre-Amplifier Gain`, `Amplifier Gain` and `Sampling Freq.` from it.
 - `gnucode` writes `plotData.dat`, one number per window; the script then
   draws `graph.png`.
-
-## Licence
-
-MIT, see `LICENSE`.
