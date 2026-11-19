@@ -1,0 +1,10 @@
+set terminal png enhanced notransparent nointerlace truecolor font "Liberation, 20" size 2000,1400
+set out "graph.png"
+set title "Nadpis Grafu"
+set xlabel "Time[ms]"
+set ylabel yLabelText
+
+f(x) = x * (2.048/2**16) * 10**(-(gainTotal/20))
+
+plot "plotData.dat" using ($0/frequency):(f($1)) w linesp title "Data"
+set out
